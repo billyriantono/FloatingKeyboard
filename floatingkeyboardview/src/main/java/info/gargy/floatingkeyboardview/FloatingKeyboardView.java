@@ -20,6 +20,7 @@
 package info.gargy.floatingkeyboardview;
 
 import android.app.Activity;
+import android.app.Presentation;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
@@ -61,7 +62,7 @@ public class FloatingKeyboardView extends KeyboardView {
     private static int width;
     private static Path mHandlePath;
     private static Paint mHandlePaint;
-    private static boolean allignBottomCenter =false;
+    private static boolean allignBottomCenter = false;
 
     /**
      * Create a custom keyboardview
@@ -74,16 +75,20 @@ public class FloatingKeyboardView extends KeyboardView {
         topPaddingPx = (int) convertDpToPixel((float) TOP_PADDING_DP, context);
         this.setOnKeyboardActionListener(mOnKeyboardActionListener);
         // Hide the standard keyboard initially
-        ((Activity) getContext()).getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+        try {
+            ((Activity) getContext()).getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+        } catch (Exception e) {
+
+        }
         this.setOnTouchListener(mKeyboardOntTouchListener);
         this.setPadding(0, (int) convertDpToPixel(TOP_PADDING_DP, context), 0, 0);
 
-        mHandlePaint=new Paint();
+        mHandlePaint = new Paint();
         mHandlePaint.setColor(HANDLE_COLOR);
         mHandlePaint.setStyle(Paint.Style.FILL);
         mHandlePaint.setPathEffect(HANDLE_CORNER_EFFECT);
 
-        mHandlePath=new Path();
+        mHandlePath = new Path();
 
     }
 
@@ -225,7 +230,6 @@ public class FloatingKeyboardView extends KeyboardView {
         boolean handleTouched = false;
 
 
-
         @Override
         public boolean onTouch(View view, MotionEvent event) {
             // Use ViewGroup.MarginLayoutParams so as to work inside any layout
@@ -293,7 +297,8 @@ public class FloatingKeyboardView extends KeyboardView {
     };
 
     private void moveTo(int y, int x) {
-        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) getLayoutParams();;
+        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) getLayoutParams();
+        ;
 //        Rect inScreenCoordinates = keepInScreen(y, x);
         params.topMargin = y;
         params.leftMargin = x;
@@ -302,32 +307,34 @@ public class FloatingKeyboardView extends KeyboardView {
 
     /**
      * Position keyboard to specific point. Caution do not move it outside screen.
+     *
      * @param x
      * @param y
      */
     public void positionTo(int x, int y) {
-        moveTo (y,x);
+        moveTo(y, x);
     }
+
     /**
-     * @param topMargin of desired position
+     * @param topMargin  of desired position
      * @param leftMargin of desired position
      * @return a Rect with corrected positions so the whole view to stay in screen
      */
     private Rect keepInScreen(int topMargin, int leftMargin) {
         int top = topMargin;
         int left = leftMargin;
-        measure(ViewGroup.LayoutParams.WRAP_CONTENT,ViewGroup.LayoutParams.WRAP_CONTENT);
+        measure(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         int height = getMeasuredHeight();
         int width = getMeasuredWidth();
         //TODO: Try to explain this !!!
-        int rightCorrection = ((View) getParent()).getPaddingRight() ;
-        int botomCorrection =((View) getParent()).getPaddingBottom() ;
+        int rightCorrection = ((View) getParent()).getPaddingRight();
+        int botomCorrection = ((View) getParent()).getPaddingBottom();
         int leftCorrection = ((View) getParent()).getPaddingLeft();
-        int topCorrection =((View) getParent()).getPaddingTop();
+        int topCorrection = ((View) getParent()).getPaddingTop();
 
         Rect rootBounds = new Rect();
         ((View) getParent()).getHitRect(rootBounds);
-        rootBounds.set(rootBounds.left+leftCorrection,rootBounds.top+topCorrection,rootBounds.right-rightCorrection,rootBounds.bottom-botomCorrection);
+        rootBounds.set(rootBounds.left + leftCorrection, rootBounds.top + topCorrection, rootBounds.right - rightCorrection, rootBounds.bottom - botomCorrection);
 
         if (top <= rootBounds.top)
             top = rootBounds.top;
@@ -387,7 +394,7 @@ public class FloatingKeyboardView extends KeyboardView {
             // Get the EditText or extension of EditText and its Editable
             View focusCurrent = ((Activity) getContext()).getWindow().getCurrentFocus();
             if (focusCurrent == null || (focusCurrent.getClass() != EditText.class
-                    && focusCurrent.getClass().getSuperclass()!= EditText.class) ) return;
+                    && focusCurrent.getClass().getSuperclass() != EditText.class)) return;
             EditText edittext = (EditText) focusCurrent;
             Editable editable = edittext.getText();
             int start = edittext.getSelectionStart();
