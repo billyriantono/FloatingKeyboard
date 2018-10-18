@@ -35,6 +35,7 @@ import android.text.Editable;
 import android.text.InputType;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -56,7 +57,7 @@ public class FloatingKeyboardView extends KeyboardView {
     private static final int TOP_PADDING_DP = 28;
     private static final int HANDLE_COLOR = Color.parseColor("#AAD1D6D9");
     private static final int HANDLE_PRESSED_COLOR = Color.parseColor("#D1D6D9");
-    private static final float HANDLE_ROUND_RADIOUS = 20.0f;
+    private static final float HANDLE_ROUND_RADIOUS = 10.0f;
     private static final CornerPathEffect HANDLE_CORNER_EFFECT = new CornerPathEffect(HANDLE_ROUND_RADIOUS);
     private static int topPaddingPx;
     private static int width;
@@ -64,6 +65,7 @@ public class FloatingKeyboardView extends KeyboardView {
     private static Paint mHandlePaint;
     private static boolean allignBottomCenter = false;
     private EditText activeEditText;
+    private boolean caps;
 
     /**
      * Create a custom keyboardview
@@ -481,6 +483,12 @@ public class FloatingKeyboardView extends KeyboardView {
                 } else if (primaryCode == CodeGrab) {
 
                 }
+            } else if (primaryCode == Keyboard.KEYCODE_SHIFT) {
+                caps = !caps;
+                setShifted(caps);
+                invalidateAllKeys();
+            } else if (primaryCode == Keyboard.KEYCODE_DONE) {
+                dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
             } else { // insert character
                 ///////////////////////////////////////////////////////////////////////
                 ////////////////////////////////////////////////////////////////////
