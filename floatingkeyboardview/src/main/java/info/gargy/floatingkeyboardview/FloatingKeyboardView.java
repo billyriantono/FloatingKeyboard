@@ -488,7 +488,7 @@ public class FloatingKeyboardView extends KeyboardView {
                 setShifted(caps);
                 invalidateAllKeys();
             } else if (primaryCode == Keyboard.KEYCODE_DONE) {
-                dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
+                focusCurrent.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
             } else { // insert character
                 ///////////////////////////////////////////////////////////////////////
                 ////////////////////////////////////////////////////////////////////
