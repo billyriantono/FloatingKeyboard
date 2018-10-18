@@ -63,6 +63,7 @@ public class FloatingKeyboardView extends KeyboardView {
     private static Path mHandlePath;
     private static Paint mHandlePaint;
     private static boolean allignBottomCenter = false;
+    private EditText activeEditText;
 
     /**
      * Create a custom keyboardview
@@ -162,8 +163,12 @@ public class FloatingKeyboardView extends KeyboardView {
 //        params.leftMargin = v.getLeft();
 //        setLayoutParams(params);
 
-        if (v != null)
-            ((InputMethodManager) getContext().getSystemService(Activity.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(v.getWindowToken(), 0);
+        try {
+            if (v != null)
+                ((InputMethodManager) getContext().getSystemService(Activity.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(v.getWindowToken(), 0);
+        } catch (Exception e) {
+
+        }
 
     }
 
@@ -183,6 +188,48 @@ public class FloatingKeyboardView extends KeyboardView {
     public void registerEditText(int resid) {
         // Find the EditText 'resid'
         EditText edittext = (EditText) ((Activity) getContext()).findViewById(resid);
+        // Make the custom keyboard appear
+        edittext.setOnFocusChangeListener(new OnFocusChangeListener() {
+            // NOTE By setting the on focus listener, we can show the custom keyboard when the edit box gets focus, but also hide it when the edit box loses focus
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) show(v);
+                else hide();
+            }
+        });
+
+        edittext.setOnClickListener(new OnClickListener() {
+            // NOTE By setting the on click listener, we can show the custom keyboard again, by tapping on an edit box that already had focus (but that had the keyboard hidden).
+            @Override
+            public void onClick(View v) {
+                show(v);
+            }
+        });
+        // Disable standard keyboard hard way
+        // NOTE There is also an easy way: 'edittext.setInputType(InputType.TYPE_NULL)' (but you will not have a cursor, and no 'edittext.setCursorVisible(true)' doesn't work )
+        edittext.setOnTouchListener(new OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                EditText edittext = (EditText) v;
+                int inType = edittext.getInputType();       // Backup the input type
+                edittext.setInputType(InputType.TYPE_NULL); // Disable standard keyboard
+                edittext.onTouchEvent(event);               // Call native handler
+                edittext.setInputType(inType);              // Restore input type
+                return true; // Consume touch event
+            }
+        });
+
+    }
+
+    /**
+     * Register <var>EditText<var> with resource id <var>resid</var> (on the hosting activity) for using this custom keyboard.
+     *
+     * @param resid The resource id of the EditText that registers to the custom keyboard.
+     */
+    public void registerEditText(EditText editText) {
+        // Find the EditText 'resid'
+        activeEditText = editText;
+        EditText edittext = editText;
         // Make the custom keyboard appear
         edittext.setOnFocusChangeListener(new OnFocusChangeListener() {
             // NOTE By setting the on focus listener, we can show the custom keyboard when the edit box gets focus, but also hide it when the edit box loses focus
@@ -392,7 +439,12 @@ public class FloatingKeyboardView extends KeyboardView {
         public void onKey(int primaryCode, int[] keyCodes) {
             // NOTE We can say '<Key android:codes="49,50" ... >' in the xml file; all codes come in keyCodes, the first in this list in primaryCode
             // Get the EditText or extension of EditText and its Editable
-            View focusCurrent = ((Activity) getContext()).getWindow().getCurrentFocus();
+            View focusCurrent = null;
+            try {
+                focusCurrent = ((Activity) getContext()).getWindow().getCurrentFocus();
+            } catch (Exception ex) {
+                focusCurrent = activeEditText;
+            }
             if (focusCurrent == null || (focusCurrent.getClass() != EditText.class
                     && focusCurrent.getClass().getSuperclass() != EditText.class)) return;
             EditText edittext = (EditText) focusCurrent;
