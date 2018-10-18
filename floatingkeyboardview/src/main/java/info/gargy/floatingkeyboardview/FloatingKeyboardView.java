@@ -496,7 +496,11 @@ public class FloatingKeyboardView extends KeyboardView {
                 if (start != end) {
                     editable.delete(start, end);
                 }
-                editable.insert(start, Character.toString((char) primaryCode));
+                char code = (char) primaryCode;
+                if (Character.isLetter((char) primaryCode) && caps) {
+                    code = Character.toUpperCase((char) primaryCode);
+                }
+                editable.insert(start, Character.toString(code));
             }
         }
 
